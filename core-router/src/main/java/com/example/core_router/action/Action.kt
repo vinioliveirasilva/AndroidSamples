@@ -1,4 +1,4 @@
-package br.com.uol.ps.myaccount.core.router.actions
+package com.example.core_router.action
 
 interface Action {
     val name: String

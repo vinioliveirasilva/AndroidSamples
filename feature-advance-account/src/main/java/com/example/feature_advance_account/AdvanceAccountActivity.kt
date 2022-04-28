@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.example.core_router.di.RouterModule
 import com.example.feature_advance_account.base.StepActivity
 import com.example.feature_advance_account.base.StepFragment
 import com.example.feature_advance_account.databinding.ActivityAdvanceAccountBinding
@@ -21,7 +22,10 @@ class AdvanceAccountActivity : StepActivity() {
         parametersOf(this)
     }
 
-    override val modules: List<Module> = listOf(AdvanceAccountModule.instance)
+    override val modules: List<Module> = listOf(
+        AdvanceAccountModule.instance,
+        RouterModule.instance
+    )
 
     private lateinit var fragContainer: ConstraintLayout
 

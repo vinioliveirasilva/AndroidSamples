@@ -1,7 +1,7 @@
-package br.com.uol.ps.myaccount.core.router.rule
+package com.example.core_router.rule
 
 import android.content.Context
-import br.com.uol.ps.myaccount.core.router.actions.Action
+import com.example.core_router.action.Action
 
 interface ActionRule {
     fun shouldAllowNavigation(action: Action): Boolean
