@@ -1,0 +1,20 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "AndroidSamples"
+include ':app'
+include ':feature-advance-account'
+include ':feature-advance-account:sample'
+include ':feature-cameraX'
+include ':feature-cameraX:sample'
