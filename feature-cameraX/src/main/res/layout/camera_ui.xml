@@ -73,7 +73,7 @@
         android:layout_height="wrap_content"
         android:background="#50FFFFFF"
         android:layout_margin="20dp"
-        android:text="CameraId = 0"
+        android:text="Cameras:"
         android:textColor="#000000"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

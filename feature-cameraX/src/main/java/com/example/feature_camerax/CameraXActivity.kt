@@ -1,34 +1,30 @@
 package com.example.feature_camerax
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.hardware.camera2.CameraCharacteristics
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageButton
-import androidx.camera.camera2.interop.Camera2CameraInfo
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.CameraController
-import androidx.camera.view.CameraController.IMAGE_CAPTURE
+import androidx.camera.core.CameraSelector
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
-import androidx.lifecycle.LifecycleOwner
-import com.google.common.util.concurrent.ListenableFuture
+import org.koin.android.ext.android.inject
+import org.koin.core.context.loadKoinModules
+import org.koin.core.context.unloadKoinModules
+import org.koin.core.parameter.parametersOf
 
 class CameraXActivity : AppCompatActivity() {
 
-    private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
+    private val presenter: CameraXPresenter by inject {
+        parametersOf(this)
+    }
+
     private lateinit var previewView: PreviewView
 
     private lateinit var takePictureButton: AppCompatImageButton
@@ -37,80 +33,26 @@ class CameraXActivity : AppCompatActivity() {
     private lateinit var zoomCameraButton: AppCompatImageButton
     private lateinit var cameraIdTextView: TextView
 
-    private var cameraList: MutableMap<String, Int> = mutableMapOf()
-    private var cameraId: String = ""
-    private var selectedLens = CameraSelector.LENS_FACING_BACK
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        loadKoinModules(CameraXModule.instance)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.camera_ui)
-        supportActionBar?.hide()
-        previewView = findViewById(R.id.photo_preview)
-        zoomCameraButton = findViewById(R.id.toggle_zoom)
-        changeCameraButton = findViewById(R.id.change_camera)
-        cameraIdTextView = findViewById(R.id.camera_id_tv)
 
-        cameraId = intent.getStringExtra(CAMERA_ID).orEmpty()
-        selectedLens = intent.getIntExtra(CAMERA_LENS, selectedLens)
+        setupComponents()
+        setupToolbar()
+        setupClickListeners()
 
-        changeCameraButton.setOnClickListener {
-            cameraList
-                .filter { it.value != selectedLens }
-                .map { Pair(it.key, it.value) }
-                .first()
-                .let {
-                    startActivityWithFadeAnimation(it.first, it.second)
-                }
-        }
-
-        zoomCameraButton.setOnClickListener {
-            startActivityWithFadeAnimation(cameraId, selectedLens)
-        }
-
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS
-            )
-        }
-    }
-
-    private fun startActivityWithFadeAnimation(cameraId: String, lens: Int) {
-        finish()
-        startActivity(newIntent(this, cameraId, lens))
-        overridePendingTransition(
-            R.anim.fade_in,
-            R.anim.fade_out
+        presenter.init(
+            intent.getStringExtra(CAMERA_ID).orEmpty(),
+            intent.getIntExtra(CAMERA_LENS, CameraSelector.LENS_FACING_BACK),
+            allPermissionsGranted(),
+            previewView
         )
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun setupUI() {
-        cameraIdTextView.text = "Cameras:"
-        val frontalLens = CameraSelector.LENS_FACING_FRONT
-
-        cameraList.map {
-            "\nId = ${it.key} - ${if(it.value == frontalLens) "Frontal" else "Traseira"}"
-        }.forEach {
-            cameraIdTextView.text = cameraIdTextView.text.toString().plus(it)
-        }
-    }
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun setupCameraCharacteristics(cameras: List<CameraInfo>) {
-        cameras.forEach {
-            with(Camera2CameraInfo.from(it)) {
-                cameraList[this.cameraId] =
-                    this.getCameraCharacteristic(
-                        CameraCharacteristics.LENS_FACING
-                    ) as Int
-            }
-        }
-
-        setupUI()
+    override fun onDestroy() {
+        super.onDestroy()
+        unloadKoinModules(CameraXModule.instance)
     }
 
     override fun onRequestPermissionsResult(
@@ -121,55 +63,61 @@ class CameraXActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
-                startActivityWithFadeAnimation(cameraId, selectedLens)
+                presenter.doOnPermissionsGranted()
             } else {
-                Toast.makeText(this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT).show()
-                finish()
+                showPermissionDenialToastAndFinish()
             }
         }
     }
 
+    fun requestCameraPermissions() {
+        ActivityCompat.requestPermissions(
+            this,
+            REQUIRED_PERMISSIONS,
+            REQUEST_CODE_PERMISSIONS
+        )
+    }
+
+    fun startActivityWithFadeAnimation(cameraId: String, lens: Int) {
+        finish()
+        startActivity(newIntent(this, cameraId, lens))
+        overridePendingTransition(
+            R.anim.fade_in,
+            R.anim.fade_out
+        )
+    }
+
+    fun updateUI(description: String) {
+        with(cameraIdTextView) {
+            text = text.toString().plus(description)
+        }
+    }
+
+    private fun setupComponents() {
+        previewView = findViewById(R.id.photo_preview)
+        zoomCameraButton = findViewById(R.id.toggle_zoom)
+        changeCameraButton = findViewById(R.id.change_camera)
+        cameraIdTextView = findViewById(R.id.camera_id_tv)
+    }
+
+    private fun setupToolbar() {
+        supportActionBar?.hide()
+    }
+
+    private fun setupClickListeners() {
+        changeCameraButton.setOnClickListener { presenter.doOnChangeCamera() }
+        zoomCameraButton.setOnClickListener { presenter.doOnZoomCamera() }
+    }
+
+    private fun showPermissionDenialToastAndFinish() {
+        Toast.makeText(this,
+            "Permissions not granted by the user.",
+            Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun startCamera() {
-        cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
-            bindPreview(cameraProvider)
-        }, ContextCompat.getMainExecutor(this))
-    }
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun bindPreview(cameraProvider : ProcessCameraProvider) {
-        val preview : Preview = Preview.Builder()
-            .build()
-
-        val cameraSelector : CameraSelector = CameraSelector.Builder()
-            .addCameraFilter { cameras ->
-                setupCameraCharacteristics(cameras)
-                cameras.filter {
-                    if(cameraId.isBlank()) {
-                        Camera2CameraInfo.from(it).getCameraCharacteristic(CameraCharacteristics.LENS_FACING) == selectedLens
-                    } else {
-                        cameraId == Camera2CameraInfo.from(it).cameraId
-                    }
-                }.also {
-                    cameraId = Camera2CameraInfo.from(it.first()).cameraId
-                    cameraList.filter { it.value == selectedLens && it.key != cameraId }.forEach { nextCamera ->
-                         cameraId = nextCamera.key
-                    }
-                }
-            }
-            .build()
-
-        preview.setSurfaceProvider(previewView.surfaceProvider)
-
-        var camera = cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, preview)
     }
 
     companion object {
