@@ -8,13 +8,14 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.google.common.util.concurrent.ListenableFuture
+import java.util.concurrent.Executor
 
 class CameraXPresenter(
     private val view: CameraXActivity,
-    private val cameraProvider: ListenableFuture<ProcessCameraProvider>
+    private val cameraProvider: ListenableFuture<ProcessCameraProvider>,
+    private val cameraThreadExecutor: Executor
 ) {
 
     private var cameraList: MutableMap<String, Int> = mutableMapOf()
@@ -43,8 +44,8 @@ class CameraXPresenter(
         cameraList
             .filter { it.value != selectedLens }
             .map { Pair(it.key, it.value) }
-            .first()
-            .let { view.startActivityWithFadeAnimation(it.first, it.second) }
+            .firstOrNull()
+            ?.let { view.startActivityWithFadeAnimation(it.first, it.second) }
     }
 
     fun doOnZoomCamera() {
@@ -56,17 +57,23 @@ class CameraXPresenter(
     }
 
     private fun startCamera() {
-        cameraProvider.addListener({
-            val cameraProvider = cameraProvider.get()
-            bindPreview(cameraProvider, previewView)
-        }, ContextCompat.getMainExecutor(view))
+        cameraProvider.addListener(
+            { bindPreview(cameraProvider.get()) },
+            cameraThreadExecutor
+        )
     }
 
-    private fun bindPreview(cameraProvider : ProcessCameraProvider, previewView: PreviewView) {
-        val preview : Preview = Preview.Builder()
+    private fun getPreviewUseCase(): Preview {
+        return Preview
+            .Builder()
             .build()
+            .apply {
+                setSurfaceProvider(previewView.surfaceProvider)
+            }
+    }
 
-        val cameraSelector : CameraSelector = CameraSelector.Builder()
+    private fun getCameraSelector(): CameraSelector {
+        return CameraSelector.Builder()
             .addCameraFilter { cameras ->
                 setupCameraCharacteristics(cameras)
                 cameras
@@ -74,10 +81,14 @@ class CameraXPresenter(
                     .also { updateCameraList(it) }
             }
             .build()
+    }
 
-        preview.setSurfaceProvider(previewView.surfaceProvider)
-
-        var camera = cameraProvider.bindToLifecycle(view as LifecycleOwner, cameraSelector, preview)
+    private fun bindPreview(cameraProvider : ProcessCameraProvider) {
+        var camera = cameraProvider.bindToLifecycle(
+            view as LifecycleOwner,
+            getCameraSelector(),
+            getPreviewUseCase()
+        )
     }
 
     @SuppressLint("UnsafeOptInUsageError")
