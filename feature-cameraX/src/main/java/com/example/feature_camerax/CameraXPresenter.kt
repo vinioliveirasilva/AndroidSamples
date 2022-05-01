@@ -118,19 +118,27 @@ class CameraXPresenter(
     }
 
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
-       cameraProvider.bindToLifecycle(
-            view as LifecycleOwner,
-            getCameraSelector(),
-            getPreviewUseCase()
-        )
+        val cameraSelector = getCameraSelector()
+
+        if(cameraProvider.hasCamera(cameraSelector)) {
+            cameraProvider.bindToLifecycle(
+                view as LifecycleOwner,
+                cameraSelector,
+                getPreviewUseCase()
+            )
+        } else {
+            view.showCameraInitializationError()
+        }
     }
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun updateCameraList(camerasInfo: List<CameraInfo>) {
-        cameraId = Camera2CameraInfo.from(camerasInfo.first()).cameraId
-        cameraList
-            .filter { camera -> camera.value == selectedLens && camera.key != cameraId }
-            .forEach { nextCamera -> cameraId = nextCamera.key }
+        camerasInfo.firstOrNull()?.let {
+            cameraId = Camera2CameraInfo.from(it).cameraId
+            cameraList
+                .filter { camera -> camera.value == selectedLens && camera.key != cameraId }
+                .forEach { nextCamera -> cameraId = nextCamera.key }
+        }
     }
 
     @SuppressLint("UnsafeOptInUsageError")

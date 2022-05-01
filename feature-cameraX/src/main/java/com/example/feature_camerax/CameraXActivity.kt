@@ -106,6 +106,13 @@ class CameraXActivity : AppCompatActivity() {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
+    fun showCameraInitializationError() {
+        Toast.makeText(this,
+            "Erro ao tentar inicializar a camera",
+            Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
     private companion object {
         const val REQUEST_CODE_PERMISSIONS = 22
 
