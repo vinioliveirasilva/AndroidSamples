@@ -1,8 +1,6 @@
 package com.example.feature_camerax
 
 import android.Manifest
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -10,7 +8,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageButton
-import androidx.camera.core.CameraSelector
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -43,8 +40,6 @@ class CameraXActivity : AppCompatActivity() {
         setupClickListeners()
 
         presenter.init(
-            intent.getStringExtra(CAMERA_ID).orEmpty(),
-            intent.getIntExtra(CAMERA_LENS, CameraSelector.LENS_FACING_BACK),
             allPermissionsGranted(),
             previewView
         )
@@ -78,18 +73,9 @@ class CameraXActivity : AppCompatActivity() {
         )
     }
 
-    fun startActivityWithFadeAnimation(cameraId: String, lens: Int) {
-        finish()
-        startActivity(newIntent(this, cameraId, lens))
-        overridePendingTransition(
-            R.anim.fade_in,
-            R.anim.fade_out
-        )
-    }
-
     fun updateUI(description: String) {
         with(cameraIdTextView) {
-            text = text.toString().plus(description)
+            text = "Cameras: ".plus(description)
         }
     }
 
@@ -120,12 +106,10 @@ class CameraXActivity : AppCompatActivity() {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
-    companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 22
-        private const val CAMERA_ID = "CAMERA_ID"
-        private const val CAMERA_LENS = "CAMERA_LENS"
+    private companion object {
+        const val REQUEST_CODE_PERMISSIONS = 22
 
-        private val REQUIRED_PERMISSIONS =
+        val REQUIRED_PERMISSIONS =
             mutableListOf (
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO
@@ -134,14 +118,5 @@ class CameraXActivity : AppCompatActivity() {
                     add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             }.toTypedArray()
-
-        fun newIntent(
-            context: Context,
-            cameraId: String = "",
-            lensType: Int = 0
-        ) = Intent(context, CameraXActivity::class.java).apply {
-            putExtra(CAMERA_ID, cameraId)
-            putExtra(CAMERA_LENS, lensType)
-        }
     }
 }

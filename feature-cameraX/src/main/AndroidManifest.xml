@@ -11,7 +11,11 @@
     <application>
         <activity
             android:name=".CameraXActivity"
-            android:exported="false"
-            android:launchMode="singleTop" />
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.camerax.open" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

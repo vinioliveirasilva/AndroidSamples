@@ -1,5 +1,6 @@
 package com.example.feature_camerax.sample
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -11,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<Button>(R.id.call_module).setOnClickListener {
-            startActivity(CameraXActivity.newIntent(this))
+            startActivity(Intent(this, CameraXActivity::class.java))
         }
     }
 }

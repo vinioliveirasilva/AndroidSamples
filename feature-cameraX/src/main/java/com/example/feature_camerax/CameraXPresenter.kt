@@ -6,6 +6,7 @@ import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.CameraInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
@@ -23,14 +24,32 @@ class CameraXPresenter(
     private var selectedLens = CameraSelector.LENS_FACING_BACK
     private lateinit var previewView: PreviewView
 
+    private var mustRestartCamera = false
+    private var hasLifecycleDetached: Boolean = true
+        set(value) {
+            if(value && mustRestartCamera) {
+                startCamera()
+                mustRestartCamera = false
+            }
+
+            field = value
+        }
+
+    @SuppressLint("RestrictedApi")
+    private val useCaseCallback = object : UseCase.EventCallback {
+        override fun onAttach(cameraInfo: CameraInfo) {
+            hasLifecycleDetached = false
+        }
+
+        override fun onDetach() {
+            hasLifecycleDetached = true
+        }
+    }
+
     fun init(
-        cameraId: String,
-        selectedCameraLensId: Int,
         hasAllPermissionsGranted: Boolean,
         previewView: PreviewView
     ) {
-        this.cameraId = cameraId
-        this.selectedLens = selectedCameraLensId
         this.previewView = previewView
 
         if(hasAllPermissionsGranted) {
@@ -45,15 +64,28 @@ class CameraXPresenter(
             .filter { it.value != selectedLens }
             .map { Pair(it.key, it.value) }
             .firstOrNull()
-            ?.let { view.startActivityWithFadeAnimation(it.first, it.second) }
+            ?.let { config ->
+                    cameraId = config.first
+                    selectedLens = config.second
+                }
+
+        mustRestartCamera = true
+        stopCamera()
     }
 
     fun doOnZoomCamera() {
-        view.startActivityWithFadeAnimation(cameraId, selectedLens)
+        mustRestartCamera = true
+        stopCamera()
     }
 
     fun doOnPermissionsGranted() {
-        view.startActivityWithFadeAnimation(cameraId, selectedLens)
+        startCamera()
+    }
+
+    private fun stopCamera() {
+        cameraProvider.get().run {
+            unbindAll()
+        }
     }
 
     private fun startCamera() {
@@ -63,9 +95,11 @@ class CameraXPresenter(
         )
     }
 
+    @SuppressLint("RestrictedApi")
     private fun getPreviewUseCase(): Preview {
         return Preview
             .Builder()
+            .setUseCaseEventCallback(useCaseCallback)
             .build()
             .apply {
                 setSurfaceProvider(previewView.surfaceProvider)
@@ -84,7 +118,7 @@ class CameraXPresenter(
     }
 
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {
-        var camera = cameraProvider.bindToLifecycle(
+       cameraProvider.bindToLifecycle(
             view as LifecycleOwner,
             getCameraSelector(),
             getPreviewUseCase()
@@ -112,6 +146,7 @@ class CameraXPresenter(
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun setupCameraCharacteristics(cameras: List<CameraInfo>) {
+        cameraList.clear()
         cameras.forEach {
             with(Camera2CameraInfo.from(it)) {
                 cameraList[cameraId] =
