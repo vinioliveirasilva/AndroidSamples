@@ -6,7 +6,8 @@ object AdvanceAccountModule {
     val instance = module {
         factory { (view: AdvanceAccountActivity) ->
             AdvanceAccountPresenter(
-                view = view
+                view = view,
+                router = get()
             )
         }
     }

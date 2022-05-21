@@ -3,7 +3,7 @@ package com.example.core_router.action.featureCamera
 import android.os.Bundle
 import com.example.core_router.action.Action
 
-class OpenCameraXAction : Action {
+object OpenCameraXAction : Action {
     override val name: String = "com.example.camerax.open"
 
     fun prepareParamsForFrontLens(
@@ -19,12 +19,10 @@ class OpenCameraXAction : Action {
         }
     }
 
-    companion object {
-        object Keys {
-            const val CAMERA_LENS = "CAMERA_LENS"
-        }
-
-        private const val CAMERA_BACK = 1
-        private const val CAMERA_FRONT = 0
+    object Keys {
+        const val CAMERA_LENS = "CAMERA_LENS"
     }
+
+    private const val CAMERA_BACK = 1
+    private const val CAMERA_FRONT = 0
 }

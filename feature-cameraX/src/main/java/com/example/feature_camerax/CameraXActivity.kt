@@ -1,6 +1,7 @@
 package com.example.feature_camerax
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -84,6 +85,7 @@ class CameraXActivity : AppCompatActivity() {
         zoomCameraButton = findViewById(R.id.toggle_zoom)
         changeCameraButton = findViewById(R.id.change_camera)
         cameraIdTextView = findViewById(R.id.camera_id_tv)
+        takePictureButton = findViewById(R.id.take_photo)
     }
 
     private fun setupToolbar() {
@@ -93,6 +95,7 @@ class CameraXActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         changeCameraButton.setOnClickListener { presenter.doOnChangeCamera() }
         zoomCameraButton.setOnClickListener { presenter.doOnZoomCamera() }
+        takePictureButton.setOnClickListener { presenter.onTakePicture() }
     }
 
     private fun showPermissionDenialToastAndFinish() {
@@ -110,6 +113,11 @@ class CameraXActivity : AppCompatActivity() {
         Toast.makeText(this,
             "Erro ao tentar inicializar a camera",
             Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    fun finishWithSuccess() {
+        setResult(Activity.RESULT_OK)
         finish()
     }
 

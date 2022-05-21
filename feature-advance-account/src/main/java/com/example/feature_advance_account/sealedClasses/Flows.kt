@@ -7,6 +7,8 @@ sealed class Flows(override val steps: List<Steps>) : StepContract.FlowEnum {
         steps = listOf(
             Steps.FirstScreen,
             Steps.SecondScreen,
+            Steps.CameraBack,
+            Steps.CameraFront,
             Steps.Finish
         )
     )

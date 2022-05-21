@@ -50,16 +50,13 @@ class AdvanceAccountActivity : StepActivity() {
         presenter.init(Flows.TestFlow)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        presenter.onActivityResult(requestCode, resultCode, data)
+    }
+
     fun showFirstScreen() = addFragment(FirstFragment())
     fun showSecondScreen() = addFragment(SecondFragment())
-
-    fun setToolbarTitle(title: String) = apply {
-        supportActionBar?.title = title
-    }
-
-    fun showToolbarHome(shouldShow: Boolean) = apply {
-        supportActionBar?.setDisplayHomeAsUpEnabled(shouldShow)
-    }
 
     override fun onSupportNavigateUp(): Boolean {
         super.onBackPressed()

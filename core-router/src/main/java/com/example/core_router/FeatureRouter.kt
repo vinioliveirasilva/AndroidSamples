@@ -1,6 +1,7 @@
 package com.example.core_router
 
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -104,7 +105,10 @@ internal class StandardFeatureRouter(private val actionRule: ActionRule) : Featu
     ) {
         if (actionRule.shouldAllowNavigation(action)) {
             receiver.run {
-                startActivityForResult(createIntent(this, action, flags, args), requestCode)
+                startActivityForResult(
+                    createIntent(this, action, flags, args),
+                    requestCode
+                )
             }
         } else {
             actionRule.onNotAllowedNavigation(receiver, action)
@@ -121,7 +125,10 @@ internal class StandardFeatureRouter(private val actionRule: ActionRule) : Featu
         if (actionRule.shouldAllowNavigation(action)) {
             receiver.run {
                 context?.let { context ->
-                    startActivityForResult(createIntent(context, action, flags, args), requestCode)
+                    startActivityForResult(
+                        createIntent(context, action, flags, args),
+                        requestCode
+                    )
                 } ?: run {
                     throw IllegalStateException("The received fragment $this not attached to a context.")
                 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.feature_advance_account.AdvanceAccountActivity
+import com.example.feature_advance_account.base.StepActivity
 import com.example.feature_advance_account.base.StepFragment
 import com.example.feature_advance_account.databinding.FragmentSecondBinding
 
@@ -24,7 +25,7 @@ class SecondFragment : StepFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as? AdvanceAccountActivity)
+        (activity as? StepActivity)
             ?.setToolbarTitle("Segundo fragmento")
             ?.showToolbarHome(true)
 

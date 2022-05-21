@@ -1,5 +1,6 @@
 package com.example.feature_advance_account.base
 
+import android.content.Intent
 import android.os.Parcelable
 
 interface StepContract {
@@ -22,6 +23,8 @@ interface StepContract {
         fun onNext()
         fun onPrevious()
         fun parseKeyValue(keyValue: Pair<String, Parcelable?>)
+        fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
+        fun enableNext()
     }
 
     interface StepEnum

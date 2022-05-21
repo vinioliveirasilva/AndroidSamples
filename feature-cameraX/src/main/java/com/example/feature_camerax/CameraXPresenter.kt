@@ -179,6 +179,10 @@ class CameraXPresenter(
         }
     }
 
+    fun onTakePicture() {
+        view.finishWithSuccess()
+    }
+
     private companion object {
         const val FRONT_LEN = "Frontal"
         const val BACK_LEN = "Traseira"

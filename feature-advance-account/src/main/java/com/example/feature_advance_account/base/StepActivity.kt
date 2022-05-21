@@ -1,12 +1,8 @@
 package com.example.feature_advance_account.base
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.appcompat.app.AppCompatActivity
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 import org.koin.core.context.loadKoinModules
 import org.koin.core.context.unloadKoinModules
 import org.koin.core.module.Module
@@ -16,8 +12,6 @@ abstract class StepActivity: AppCompatActivity(), StepContract.Activity {
     abstract val presenter: StepContract.Presenter
 
     abstract val modules: List<Module>
-
-    private var isNextStepEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         loadKoinModules(modules)
@@ -30,34 +24,15 @@ abstract class StepActivity: AppCompatActivity(), StepContract.Activity {
     }
 
     override fun onNext() {
-        if(isNextStepEnabled) {
-            disableNext()
-            throttleNextAction()
-        }
+        presenter.onNext()
     }
 
     override fun onPrevious() {
-        disableNext()
         presenter.onPrevious()
     }
 
-    private fun disableNext() {
-        isNextStepEnabled = false
-    }
-
-    @SuppressLint("CheckResult")
-    private fun throttleNextAction() {
-        Observable.just("")
-            .throttleFirst(100, TimeUnit.MILLISECONDS)
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                presenter.onNext()
-            }
-    }
-
     override fun enableNext() {
-        isNextStepEnabled = true
+        presenter.enableNext()
     }
 
     override fun onNext(pairKeyValue: Pair<String, Parcelable?>) {
@@ -80,5 +55,13 @@ abstract class StepActivity: AppCompatActivity(), StepContract.Activity {
                 )
             }
         }
+    }
+
+    fun setToolbarTitle(title: String) = apply {
+        supportActionBar?.title = title
+    }
+
+    fun showToolbarHome(shouldShow: Boolean) = apply {
+        supportActionBar?.setDisplayHomeAsUpEnabled(shouldShow)
     }
 }
