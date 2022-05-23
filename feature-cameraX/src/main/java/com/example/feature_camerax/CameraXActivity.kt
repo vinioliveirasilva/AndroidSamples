@@ -2,6 +2,7 @@ package com.example.feature_camerax
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -99,9 +100,12 @@ class CameraXActivity : AppCompatActivity() {
     }
 
     private fun showPermissionDenialToastAndFinish() {
-        Toast.makeText(this,
+        Toast.makeText(
+            this,
             "Permissions not granted by the user.",
-            Toast.LENGTH_SHORT).show()
+            Toast.LENGTH_SHORT
+        )
+            .show()
         finish()
     }
 
@@ -110,15 +114,27 @@ class CameraXActivity : AppCompatActivity() {
     }
 
     fun showCameraInitializationError() {
-        Toast.makeText(this,
+        Toast.makeText(
+            this,
             "Erro ao tentar inicializar a camera",
-            Toast.LENGTH_SHORT).show()
+            Toast.LENGTH_SHORT
+        )
+            .show()
         finish()
     }
 
-    fun finishWithSuccess() {
-        setResult(Activity.RESULT_OK)
+    fun finishWithSuccess(data: Intent) {
+        setResult(Activity.RESULT_OK, data)
         finish()
+    }
+
+    fun showImageCaptureSuccessFeedback(msg: String) {
+        Toast.makeText(
+            this,
+            msg,
+            Toast.LENGTH_SHORT
+        )
+            .show()
     }
 
     private companion object {
