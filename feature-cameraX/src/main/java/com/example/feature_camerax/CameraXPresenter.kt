@@ -63,7 +63,7 @@ class CameraXPresenter(
 
         override fun onImageSaved(output: ImageCapture.OutputFileResults){
             val msg = "Photo capture succeeded: ${output.savedUri}"
-            view.showImageCaptureSuccessFeedback(msg)
+            view.showToast(msg)
             view.finishWithSuccess(
                 Intent().apply {
                     putExtra("IMAGE_URI", output.savedUri)
@@ -147,11 +147,13 @@ class CameraXPresenter(
         val cameraSelector = getCameraSelector()
 
         if(cameraProvider.hasCamera(cameraSelector)) {
-            cameraProvider.bindToLifecycle(
-                view as LifecycleOwner,
-                cameraSelector,
-                getPreviewUseCase(),
-                imageCapture
+            observeCameraState(
+                cameraProvider.bindToLifecycle(
+                    view as LifecycleOwner,
+                    cameraSelector,
+                    getPreviewUseCase(),
+                    imageCapture
+                ).cameraInfo
             )
         } else {
             view.showCameraInitializationError()
@@ -241,6 +243,22 @@ class CameraXPresenter(
             cameraThreadExecutor,
             imageCaptureCallbacks
         )
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun observeCameraState(cameraInfo: CameraInfo) {
+        cameraInfo.cameraState.observe(view) { cameraState ->
+            run {
+                view.showCameraState(
+                    cameraState.type.name.plus(
+                        " - cameraId: ${Camera2CameraInfo.from(cameraInfo).cameraId}"
+                    )
+                )
+                cameraState.error?.let {
+                    view.showToast(it.code.toString())
+                }
+            }
+        }
     }
 
     private companion object {

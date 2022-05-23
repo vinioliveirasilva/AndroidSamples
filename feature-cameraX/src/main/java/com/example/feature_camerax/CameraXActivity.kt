@@ -128,10 +128,19 @@ class CameraXActivity : AppCompatActivity() {
         finish()
     }
 
-    fun showImageCaptureSuccessFeedback(msg: String) {
+    fun showToast(msg: String) {
         Toast.makeText(
             this,
             msg,
+            Toast.LENGTH_SHORT
+        )
+            .show()
+    }
+
+    fun showCameraState(msg: String) {
+        Toast.makeText(
+            this,
+            "CameraState: ".plus(msg),
             Toast.LENGTH_SHORT
         )
             .show()
