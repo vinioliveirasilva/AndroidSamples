@@ -10,7 +10,7 @@ import org.koin.core.module.Module
 abstract class StepFragment(
 ) : Fragment(), StepContract.Fragment {
 
-    //abstract val modules: Module
+    abstract val modules: Module
     val stepActivity = activity as? StepActivity
 
     override fun onNext() {
@@ -22,14 +22,14 @@ abstract class StepFragment(
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //loadKoinModules(modules)
+        loadKoinModules(modules)
         super.onCreate(savedInstanceState)
         (activity as? StepActivity)?.enableNext()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        //unloadKoinModules(modules)
+        unloadKoinModules(modules)
         (activity as? StepActivity)?.enableNext()
     }
 

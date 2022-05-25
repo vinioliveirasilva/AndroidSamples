@@ -4,14 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.feature_advance_account.AdvanceAccountActivity
-import com.example.feature_advance_account.base.StepActivity
 import com.example.feature_advance_account.base.StepFragment
 import com.example.feature_advance_account.databinding.FragmentSecondBinding
+import org.koin.core.module.Module
+import org.koin.dsl.module
 
 class SecondFragment : StepFragment() {
 
     lateinit var binding: FragmentSecondBinding
+
+    override val modules: Module = module {  }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,7 +27,8 @@ class SecondFragment : StepFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity as? StepActivity)
+
+        stepActivity
             ?.setToolbarTitle("Segundo fragmento")
             ?.showToolbarHome(true)
 
