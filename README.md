@@ -1,0 +1,3 @@
+# AndroidSamples
+
+https://exchangeratesapi.io/
