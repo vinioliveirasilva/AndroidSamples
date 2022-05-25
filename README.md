@@ -1,3 +1,3 @@
 # AndroidSamples
 
-https://exchangeratesapi.io/
+currencyexchange - https://exchangeratesapi.io/
